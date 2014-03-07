@@ -1,41 +1,58 @@
 var EventEmitter = require('events').EventEmitter;
 var util = require('util');
-var crypto = require('crypto');
 
-function makeTimeout(at, job) {
+var Job = require('./Job');
+
+
+/**
+ * Sets up the next job.
+ *
+ * @param {At} at A job queue.
+ */
+
+function makeTimeout(at) {
 	'use strict';
 
-	at.next = job;
+	if (!at.jobs[0]) {
+		return;
+	}
 
 	// > 0 is in the future.
-	var dt = job.time - Date.now();
+	var dt = at.jobs[0].time - Date.now();
 
 	// Jobs set for now or some time in the past should emit immediately.
 	if (dt <= 0) {
-		at.emit('job', job.message);
-		return null;
+		at.emit('job', at.jobs.shift());
+		return;
 	}
 
 	clearTimeout(at.timeout);
 
 	// Jobs in the future are given to a timeout.
 	at.timeout =  setTimeout(function () {
-		at.emit('job', job);
+		at.emit('job', at.jobs.shift());
 	}, dt);
 }
 
-// Set the timeout to trigger for the next job.
+
+/**
+ * Set the next timeout.
+ *
+ * @param {At} at A job queue.
+ */
+
 function makeNext(at) {
 	'use strict';
 
-	return function () {
-		if (at.jobs.length) {
-			return makeTimeout(at, at.jobs.shift());
-		}
+	if (at.jobs.length) {
+		return makeTimeout(at);
+	}
 
-		at.next = null;
-		at.timeout =  null;
-	};
+	if (at.timeout) {
+		clearTimeout(at.timeout);
+	}
+
+	at.timeout =  null;
 }
 
 function sortJobs(a, b) {
@@ -43,6 +60,13 @@ function sortJobs(a, b) {
 
 	return a.time - b.time;
 }
+
+
+/**
+ * The job queue constructor.
+ *
+ * @param {Job[]|Object[]} [jobs] Array of job instances.
+ */
 
 function At(jobs) {
 	'use strict';
@@ -54,59 +78,104 @@ function At(jobs) {
 	EventEmitter.call(this);
 
 	// jobs is a queue of job specifications.
-	this.jobs = jobs || [];
+	this.jobs = Job.fromList(jobs || []);
 
 	// timeout is set to trigger on the next job.
 	this.timeout = null;
-	this.next = null;
 
-	var next = makeNext(this);
+	var that = this;
 
 	// Set up the first timeout.
-	this.on('job', next);
+	this.on('job', function next() {
+		makeNext(that);
+	});
 
-	next(this);
+	makeNext(this);
 }
 
 util.inherits(At, EventEmitter);
 
+
+/**
+ * Add a job to the queue.
+ *
+ * @param {Number|Date} time    A date or timestamp of when the job should be emitted.
+ * @param {*}           message Anything that can be given to JSON.stringify without throwing.
+ */
+
 At.prototype.add = function (time, message) {
 	'use strict';
 
-	if (!message) {
-		return new Error('Message argument must be populated.');
-	}
-
-	time = time instanceof Date ? time.getTime() : parseInt(time, 10);
-
-	if (!time) {
-		return new TypeError('Time must be a Date object or an integer.');
-	}
-
-	var hash = crypto.createHash('sha1')
-		.update(time.toString())
-		.update(JSON.stringify(message)).digest('hex');
-
-	var job = { time: time, message: message, hash: hash };
+	var job = new Job(time, message);
 
 	// If no job is scheduled, then set this as the next.
-	if (!this.next) {
-		return makeTimeout(this, job);
+	if (this.jobs.length === 0) {
+		this.jobs.push(job);
+
+		return makeTimeout(this);
 	}
 
 	// If a job is scheduled, but this should happen before, replace it and queue up the old job.
-	if (this.next.time > job.time) {
+	if (this.jobs[0].time > job.time) {
 
 		// Put the old job back on the stack and sort to be sure.
-		this.jobs.unshift(this.next);
-		this.jobs.sort(sortJobs);
+		this.jobs.unshift(job);
 
-		return makeTimeout(this, job);
+		return makeTimeout(this);
 	}
 
 	// If a job is scheduled, and this new job should happen after, then just add it to the queue.
 	this.jobs.push(job);
 	this.jobs.sort(sortJobs);
+};
+
+
+/**
+ * Given a has, attempt to return the associated job.
+ *
+ * @param  {String} hash A job hash.
+ * @return {Job}         A job instance.
+ */
+
+At.prototype.find = function (hash) {
+	'use strict';
+
+	for (var i = 0, len = this.jobs.length; i < len; i++) {
+		var job = this.jobs[i];
+
+		if (job.hash === hash) {
+			return job;
+		}
+	}
+};
+
+
+/**
+ * Remove a job.
+ *
+ * @param  {String}  hash Hash of the job to be removed.
+ * @return {Boolean}      The returned value is true if a job was removed.
+ */
+
+At.prototype.remove = function (hash) {
+	'use strict';
+
+	var job = this.find(hash);
+
+	if (!job) {
+		return false;
+	}
+
+	if (job === this.jobs[0]) {
+		this.jobs.shift();
+		makeNext(this);
+
+		return true;
+	}
+
+	this.jobs.splice(this.jobs.indexOf(job), 1);
+
+	return true;
 };
 
 module.exports = At;
