@@ -1,5 +1,15 @@
 var Job = require('../Job.js');
 
+exports['An undefined message should throw'] = function (test) {
+	'use strict';
+
+	test.throws(function () {
+		new Job(new Date());
+	});
+
+	test.done();
+};
+
 exports['New instance with timestamp.'] = function (test) {
 	'use strict';
 
@@ -20,6 +30,16 @@ exports['New instances with time object.'] = function (test) {
 	test.done();
 };
 
+exports['New instances with a bad time should throw.'] = function (test) {
+	'use strict';
+
+	test.throws(function () {
+		new Job(undefined, 'test');
+	});
+
+	test.done();
+};
+
 exports['Forgetting new should be ok.'] = function (test) {
 	'use strict';
 
@@ -37,5 +57,18 @@ exports['Hashes should be consistent'] = function (test) {
 	var jobB = new Job(now, { b: 2, a: 1 });
 
 	test.strictEqual(jobA.hash, jobB.hash);
+	test.done();
+};
+
+exports['Building jobs from a list of objects'] = function (test) {
+	'use strict';
+
+	var job1 = { time: new Date(), message: 'one' };
+	var job2 = new Job(Date.now(), 'two');
+
+	var list = Job.fromList([job1, job2]);
+
+	test.ok(list[0] instanceof Job);
+	test.ok(list[1] instanceof Job);
 	test.done();
 };

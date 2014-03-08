@@ -13,23 +13,22 @@ var Job = require('./Job');
 function makeTimeout(rubidium) {
 	'use strict';
 
-	if (!rubidium.jobs[0]) {
-		return;
-	}
-
 	// > 0 is in the future.
-	var dt = rubidium.jobs[0].time - Date.now();
+	var dt = Math.max(rubidium.jobs[0].time - Date.now(), 0);
 
 	// Jobs set for now or some time in the past should emit immediately.
 	if (dt <= 0) {
-		rubidium.emit('job', rubidium.jobs.shift());
+		setImmediate(function () {
+			rubidium.emit('job', rubidium.jobs.shift());
+		});
+
 		return;
 	}
 
 	clearTimeout(rubidium.timeout);
 
 	// Jobs in the future are given to a timeout.
-	rubidium.timeout =  setTimeout(function () {
+	rubidium.timeout = setTimeout(function () {
 		rubidium.emit('job', rubidium.jobs.shift());
 	}, dt);
 }

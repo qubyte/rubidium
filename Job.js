@@ -16,14 +16,14 @@ function Job(time, message) {
 		return new Job(time, message);
 	}
 
-	if (!message) {
-		return new Error('Message argument must be populated.');
+	if (message === undefined) {
+		throw new Error('Message argument must be populated.');
 	}
 
 	this.time = time instanceof Date ? time.getTime() : parseInt(time, 10);
 
 	if (!this.time) {
-		return new TypeError('Time must be a Date object or an integer.');
+		throw new TypeError('Time must be a Date object or an integer.');
 	}
 
 	this.message = message;
