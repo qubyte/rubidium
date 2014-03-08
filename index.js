@@ -7,30 +7,30 @@ var Job = require('./Job');
 /**
  * Sets up the next job.
  *
- * @param {At} at A job queue.
+ * @param {Rubidium} rubidium A job queue.
  */
 
-function makeTimeout(at) {
+function makeTimeout(rubidium) {
 	'use strict';
 
-	if (!at.jobs[0]) {
+	if (!rubidium.jobs[0]) {
 		return;
 	}
 
 	// > 0 is in the future.
-	var dt = at.jobs[0].time - Date.now();
+	var dt = rubidium.jobs[0].time - Date.now();
 
 	// Jobs set for now or some time in the past should emit immediately.
 	if (dt <= 0) {
-		at.emit('job', at.jobs.shift());
+		rubidium.emit('job', rubidium.jobs.shift());
 		return;
 	}
 
-	clearTimeout(at.timeout);
+	clearTimeout(rubidium.timeout);
 
 	// Jobs in the future are given to a timeout.
-	at.timeout =  setTimeout(function () {
-		at.emit('job', at.jobs.shift());
+	rubidium.timeout =  setTimeout(function () {
+		rubidium.emit('job', rubidium.jobs.shift());
 	}, dt);
 }
 
@@ -38,23 +38,27 @@ function makeTimeout(at) {
 /**
  * Set the next timeout.
  *
- * @param {At} at A job queue.
+ * @param {Rubidium} rubidium A job queue.
  */
 
-function makeNext(at) {
+function makeNext(rubidium) {
 	'use strict';
 
-	if (at.jobs.length) {
-		return makeTimeout(at);
+	if (rubidium.jobs.length) {
+		return makeTimeout(rubidium);
 	}
 
-	if (at.timeout) {
-		clearTimeout(at.timeout);
+	if (rubidium.timeout) {
+		clearTimeout(rubidium.timeout);
 	}
 
-	at.timeout =  null;
+	rubidium.timeout =  null;
 }
 
+
+/**
+ * Sorting function for jobs.
+ */
 function sortJobs(a, b) {
 	'use strict';
 
@@ -68,32 +72,32 @@ function sortJobs(a, b) {
  * @param {Job[]|Object[]} [jobs] Array of job instances.
  */
 
-function At(jobs) {
+function Rubidium(jobs) {
 	'use strict';
 
-	if (!(this instanceof At)) {
-		return new At(jobs);
+	var rubidium = this;
+
+	if (!(rubidium instanceof Rubidium)) {
+		return new Rubidium(jobs);
 	}
 
-	EventEmitter.call(this);
+	EventEmitter.call(rubidium);
 
 	// jobs is a queue of job specifications.
-	this.jobs = Job.fromList(jobs || []);
+	rubidium.jobs = Job.fromList(jobs || []);
 
 	// timeout is set to trigger on the next job.
-	this.timeout = null;
-
-	var that = this;
+	rubidium.timeout = null;
 
 	// Set up the first timeout.
-	this.on('job', function next() {
-		makeNext(that);
+	rubidium.on('job', function next() {
+		makeNext(rubidium);
 	});
 
-	makeNext(this);
+	makeNext(rubidium);
 }
 
-util.inherits(At, EventEmitter);
+util.inherits(Rubidium, EventEmitter);
 
 
 /**
@@ -103,16 +107,19 @@ util.inherits(At, EventEmitter);
  * @param {*}           message Anything that can be given to JSON.stringify without throwing.
  */
 
-At.prototype.add = function (time, message) {
+Rubidium.prototype.add = function (time, message) {
 	'use strict';
 
 	var job = new Job(time, message);
+
+	this.emit('addJob', job);
 
 	// If no job is scheduled, then set this as the next.
 	if (this.jobs.length === 0) {
 		this.jobs.push(job);
 
-		return makeTimeout(this);
+		makeTimeout(this);
+		return job.hash;
 	}
 
 	// If a job is scheduled, but this should happen before, replace it and queue up the old job.
@@ -121,23 +128,26 @@ At.prototype.add = function (time, message) {
 		// Put the old job back on the stack and sort to be sure.
 		this.jobs.unshift(job);
 
-		return makeTimeout(this);
+		makeTimeout(this);
+		return job.hash;
 	}
 
 	// If a job is scheduled, and this new job should happen after, then just add it to the queue.
 	this.jobs.push(job);
 	this.jobs.sort(sortJobs);
+
+	return job.hash;
 };
 
 
 /**
- * Given a has, attempt to return the associated job.
+ * Given a hash, attempt to return the associated job.
  *
  * @param  {String} hash A job hash.
  * @return {Job}         A job instance.
  */
 
-At.prototype.find = function (hash) {
+Rubidium.prototype.find = function (hash) {
 	'use strict';
 
 	for (var i = 0, len = this.jobs.length; i < len; i++) {
@@ -157,10 +167,12 @@ At.prototype.find = function (hash) {
  * @return {Boolean}      The returned value is true if a job was removed.
  */
 
-At.prototype.remove = function (hash) {
+Rubidium.prototype.remove = function (hash) {
 	'use strict';
 
 	var job = this.find(hash);
+
+	this.emit('removeJob', job);
 
 	if (!job) {
 		return false;
@@ -178,4 +190,4 @@ At.prototype.remove = function (hash) {
 	return true;
 };
 
-module.exports = At;
+module.exports = Rubidium;

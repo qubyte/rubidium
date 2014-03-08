@@ -4,15 +4,23 @@
   "description": "A small unique job scheduler.",
   "main": "index.js",
   "scripts": {
-    "test": "jshint *.js && tape test"
+    "test": "jshint *.js && nodeunit test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/qubyte/rubidium"
+  },
+  "dependencies": {
+    "json-stable-stringify": "0.1.1"
   },
   "devDependencies": {
-    "tape": "^2.10.2"
+    "nodeunit": "^0.8.6"
   },
   "keywords": [
     "cron",
     "schedule",
-    "tasks"
+    "tasks",
+    "atd"
   ],
   "author": "Mark Stanley Everitt",
   "license": "MIT",

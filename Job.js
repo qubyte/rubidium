@@ -1,4 +1,5 @@
 var crypto = require('crypto');
+var stringify = require('json-stable-stringify');
 
 
 /**
@@ -11,6 +12,10 @@ var crypto = require('crypto');
 function Job(time, message) {
 	'use strict';
 
+	if (!(this instanceof Job)) {
+		return new Job(time, message);
+	}
+
 	if (!message) {
 		return new Error('Message argument must be populated.');
 	}
@@ -21,13 +26,12 @@ function Job(time, message) {
 		return new TypeError('Time must be a Date object or an integer.');
 	}
 
-	this.time = time;
 	this.message = message;
 
 	this.hash = crypto.createHash('sha1')
-		.update(crypto.pseudoRandomBytes(6))
 		.update(time.toString())
-		.update(JSON.stringify(message)).digest('hex');
+		.update(stringify(message))
+		.digest('hex');
 }
 
 
@@ -48,6 +52,10 @@ Job.fromList = function (specs) {
 
 		jobs.push(spec instanceof Job ? spec : new Job(spec.time, spec.message));
 	}
+
+	jobs.sort(function (a, b) {
+		return a.time - b.time;
+	});
 
 	return jobs;
 };
