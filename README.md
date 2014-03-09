@@ -24,7 +24,7 @@ If you want to build a daemon like service, you can provide a route for adding j
 ```javascript
 var express = require('express');
 var request = require('request');
-var Rubidium = require('../');
+var Rubidium = require('rubidium');
 
 var app = express();
 var rb = new Rubidium();
@@ -91,3 +91,11 @@ Get a job from the Rubidium instance with the job hash.
 ### Event: `'job'`
 
 Listeners on the `'job'` event receive a job object containing `time` and `message` fields, where `time` is an integer.
+
+### Event: `'addJob'`
+
+This event is emitted when a new job is added. The job object is passed as an argument to listeners on this event.
+
+### Event: `'removeJob'`
+
+This event is emitted when when a job is removed. The job object is passed as an argument to listeners on this event.
