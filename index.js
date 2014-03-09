@@ -16,15 +16,6 @@ function makeTimeout(rubidium) {
 	// > 0 is in the future.
 	var dt = Math.max(rubidium.jobs[0].time - Date.now(), 0);
 
-	// Jobs set for now or some time in the past should emit immediately.
-	if (dt <= 0) {
-		setImmediate(function () {
-			rubidium.emit('job', rubidium.jobs.shift());
-		});
-
-		return;
-	}
-
 	clearTimeout(rubidium.timeout);
 
 	// Jobs in the future are given to a timeout.

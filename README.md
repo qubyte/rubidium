@@ -2,6 +2,8 @@
 
 Rubidium is a one-time task emitter, inspired by the unix `at` utility. This module is a minimal implementation. It exports a constructor. Instances of the constructor are event emitters, with methods to add and remove job specifications. A job consists of a due time and a message.
 
+Rubidium is built upon the use of `setTimeout`, so [the usual warnings apply](http://nodejs.org/api/timers.html#timers_settimeout_callback_delay_arg). That said, Rubidium creates a fresh timeout after each job is emitted, so it is self-correcting to within the resolution of a timer.
+
 ## Usage
 
 ```javascript
@@ -17,7 +19,7 @@ The simplicity of the interface hides the complexity needed in managing the list
 
 ## Example
 
-If you want to build a daemon like service, you can provide routes for adding jobs, and a callback URL to send jobs to when they are emitted. For example:
+If you want to build a daemon like service, you can provide a route for adding jobs, and a callback URL to send jobs to when they are emitted. For example:
 
 ```javascript
 var express = require('express');
@@ -61,3 +63,31 @@ app.listen(8080, function () {
     console.log('At server running on port 8080.');
 });
 ```
+
+## API
+
+### `new Rubidium([jobs])`
+
+The Rubidium constructor takes an optional array of job specifications. A single specification has the form:
+
+```javascript
+var spec = { time: new Date(), message: 'message' };
+```
+
+The `time` field may be a either a date object, or a timestamp integer (like `Date.now()`). The `message` field can be anything that may be stringified. Note that this means that functions shouldn't be added as messages. This is to make persistence of a job queue to a database or communication of the job simple. A message may instead be the name of a function (to identify it in a hash for example) and some arguments to pass to it.
+
+### `var hash = rb.add(time, message)`
+
+Add a job. The `time` must be a date object or a timestamp integer (like `Date.now()`) representing the time for the job to be emitted. This method returns a hash string that may be used to find or remove the job from the queue.
+
+### `var removed = rb.remove(hash)`
+
+Remove a job from a Rubidium instance with the job hash. This function returns `true` if the job existed and was removed, or `false` if the job did not exist.
+
+### `var job = rb.find(hash)`
+
+Get a job from the Rubidium instance with the job hash.
+
+### Event: `'job'`
+
+Listeners on the `'job'` event receive a job object containing `time` and `message` fields, where `time` is an integer.
