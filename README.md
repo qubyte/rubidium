@@ -1,4 +1,4 @@
-# rubidium
+# Rubidium
 
 Rubidium is a one-time task emitter, inspired by the unix `at` utility. This module is a minimal implementation. It exports a constructor. Instances of the constructor are event emitters, with methods to add and remove job specifications. A job consists of a due time and a message.
 
