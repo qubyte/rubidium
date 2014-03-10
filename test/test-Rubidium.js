@@ -54,7 +54,7 @@ exports['A job should be emitted once.'] = function (test) {
 	}, 300);
 };
 
-exports['Jobs  submitted in the wrong order should be emitted in the correct order.'] = function (test) {
+exports['Jobs submitted in wrong order should emit in the correct order.'] = function (test) {
 	'use strict';
 
 	var rb = new Rubidium();
@@ -75,7 +75,7 @@ exports['Jobs  submitted in the wrong order should be emitted in the correct ord
 	rb.add(now + 100, messages[0]);
 };
 
-exports['Jobs should submitted in order should be emitted in the correct order.'] = function (test) {
+exports['Jobs should submitted in order should emit in the correct order.'] = function (test) {
 	'use strict';
 
 	var rb = new Rubidium();
@@ -162,6 +162,44 @@ exports['A job scheduled in the past should still be emitted.'] = function (test
 
 	rb.once('job', function (job) {
 		test.strictEqual(job.message, 'test1');
+		test.done();
+	});
+};
+
+exports['Find should get the correct job.'] = function (test) {
+	'use strict';
+
+	var rb = new Rubidium();
+	var hash;
+
+	for (var i = 0; i < 10; i++) {
+		var hashi = rb.add(Date.now() + i, i);
+
+		if (i === 5) {
+			hash = hashi;
+		}
+	}
+
+	test.strictEqual(rb.find(hash).message, 5);
+	test.done();
+};
+
+exports['Find should not find a non-existent job.'] = function (test) {
+	'use strict';
+
+	var rb = new Rubidium();
+	var hash;
+
+	for (var i = 0; i < 10; i++) {
+		var hashi = rb.add(Date.now() + i, i);
+
+		if (i === 0) {
+			hash = hashi;
+		}
+	}
+
+	rb.once('job', function () {
+		test.strictEqual(rb.find(hash), undefined);
 		test.done();
 	});
 };

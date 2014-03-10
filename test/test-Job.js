@@ -1,10 +1,12 @@
-var Job = require('../Job.js');
+var Job = require('../lib/Job.js');
 
 exports['An undefined message should throw'] = function (test) {
 	'use strict';
 
+	var job;
+
 	test.throws(function () {
-		new Job(new Date());
+		job = new Job(new Date());
 	});
 
 	test.done();
@@ -33,8 +35,10 @@ exports['New instances with time object.'] = function (test) {
 exports['New instances with a bad time should throw.'] = function (test) {
 	'use strict';
 
+	var job;
+
 	test.throws(function () {
-		new Job(undefined, 'test');
+		job = new Job(undefined, 'test');
 	});
 
 	test.done();
