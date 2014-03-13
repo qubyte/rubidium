@@ -1,6 +1,6 @@
 # rubidium
 
-[![Coverage Status](https://coveralls.io/repos/qubyte/rubidium/badge.png?branch=feature%2Fcoveralls)](https://coveralls.io/r/qubyte/rubidium?branch=feature%2Fcoveralls)
+[![Coverage Status](https://coveralls.io/repos/qubyte/rubidium/badge.png?branch=master)](https://coveralls.io/r/qubyte/rubidium?branch=master)
 [![Code Climate](https://codeclimate.com/github/qubyte/rubidium.png)](https://codeclimate.com/github/qubyte/rubidium)
 [![Build Status](https://travis-ci.org/qubyte/rubidium.png?branch=master)](https://travis-ci.org/qubyte/rubidium)
 [![David](https://david-dm.org/qubyte/rubidium.png?theme=shields.io)](https://david-dm.org/qubyte/rubidium)
