@@ -3,7 +3,7 @@
 [![Coverage Status](http://img.shields.io/coveralls/qubyte/rubidium.svg)](https://coveralls.io/r/qubyte/rubidium?branch=master)
 [![Code Climate](http://img.shields.io/codeclimate/github/qubyte/rubidium.svg)](https://codeclimate.com/github/qubyte/rubidium)
 [![Build Status](http://img.shields.io/travis/qubyte/rubidium/master.svg)](https://travis-ci.org/qubyte/rubidium)
-[![David](https://david-dm.org/qubyte/rubidium.png?theme=shields.io)](https://david-dm.org/qubyte/rubidium)
+[![David](https://david-dm.org/qubyte/rubidium.svg?theme=shields.io)](https://david-dm.org/qubyte/rubidium)
 
 Rubidium is a one-time task emitter, inspired by the unix `at` utility. This module is a minimal implementation. It exports a constructor. Instances of the constructor are event emitters, with methods to add and remove job specifications. A job consists of a due time and a message.
 
