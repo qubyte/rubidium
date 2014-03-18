@@ -5,6 +5,9 @@
 [![Build Status](http://img.shields.io/travis/qubyte/rubidium/master.svg)](https://travis-ci.org/qubyte/rubidium)
 [![David](https://david-dm.org/qubyte/rubidium.svg?theme=shields.io)](https://david-dm.org/qubyte/rubidium)
 
+[![npm](http://img.shields.io/npm/v/rubidium.svg)](https://npmjs.org/rubidium)
+[![npm](http://img.shields.io/github/release/qubyte/rubidium.svg)](https://github.com/qubyte/rubidium/releases)
+
 Rubidium is a one-time task emitter, inspired by the unix `at` utility. This module is a minimal implementation. It exports a constructor. Instances of the constructor are event emitters, with methods to add and remove job specifications. A job consists of a due time and a message.
 
 Rubidium is built upon the use of `setTimeout`, so [the usual warnings apply](http://nodejs.org/api/timers.html#timers_settimeout_callback_delay_arg). That said, Rubidium creates a fresh timeout after each job is emitted, so it is self-correcting to within the resolution of a timer.
