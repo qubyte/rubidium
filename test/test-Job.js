@@ -44,6 +44,18 @@ exports['New instances with a bad time should throw.'] = function (test) {
 	test.done();
 };
 
+exports['job.stringify should be stable.'] = function (test) {
+	'use strict';
+
+	var now = Date.now();
+
+	var job1 = new Job(now, { a: 1, b: 2 });
+	var job2 = new Job(now, { b: 2, a: 1 });
+
+	test.strictEqual(job1.stringify(), job2.stringify());
+	test.done();
+};
+
 exports['Forgetting new should be ok.'] = function (test) {
 	'use strict';
 
