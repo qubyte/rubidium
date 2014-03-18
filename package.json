@@ -1,6 +1,6 @@
 {
   "name": "rubidium",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "A small unique job scheduler.",
   "main": "index.js",
   "scripts": {
