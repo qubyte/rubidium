@@ -100,8 +100,9 @@ exports['Removed jobs should not be emitted.'] = function (test) {
 	'use strict';
 
 	var rb = new Rubidium();
-	var hash = rb.add(Date.now() + 100, 'test');
-	rb.remove(hash);
+	var job = rb.add(Date.now() + 100, 'test');
+
+	rb.remove(job.hash);
 
 	var emitted = false;
 
@@ -129,9 +130,9 @@ exports['Removing the next job should not disrupt the following.'] = function (t
 	'use strict';
 
 	var rb = new Rubidium();
-	var hash = rb.add(Date.now() + 100, 'test1');
+	var job = rb.add(Date.now() + 100, 'test1');
 	rb.add(Date.now() + 200, 'test2');
-	rb.remove(hash);
+	rb.remove(job.hash);
 
 	rb.on('job', function (job) {
 		test.strictEqual(job.message, 'test2');
@@ -144,8 +145,8 @@ exports['Removing a job (not next) should not disrupt the next.'] = function (te
 
 	var rb = new Rubidium();
 	rb.add(Date.now() + 100, 'test1');
-	var hash = rb.add(Date.now() + 200, 'test2');
-	rb.remove(hash);
+	var job = rb.add(Date.now() + 200, 'test2');
+	rb.remove(job.hash);
 
 	rb.on('job', function (job) {
 		test.strictEqual(job.message, 'test1');
@@ -173,10 +174,10 @@ exports['Find should get the correct job.'] = function (test) {
 	var hash;
 
 	for (var i = 0; i < 10; i++) {
-		var hashi = rb.add(Date.now() + i, i);
+		var job = rb.add(Date.now() + i, i);
 
 		if (i === 5) {
-			hash = hashi;
+			hash = job.hash;
 		}
 	}
 

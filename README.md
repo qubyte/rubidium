@@ -84,9 +84,9 @@ var spec = { time: new Date(), message: 'message' };
 
 The `time` field may be a either a date object, or a timestamp integer (like `Date.now()`). The `message` field can be anything that may be stringified. Note that this means that functions shouldn't be added as messages. This is to make persistence of a job queue to a database or communication of the job simple. A message may instead be the name of a function (to identify it in a hash for example) and some arguments to pass to it.
 
-### `var hash = rb.add(time, message)`
+### `var job = rb.add(time, message)`
 
-Add a job. The `time` must be a date object or a timestamp integer (like `Date.now()`) representing the time for the job to be emitted. This method returns a hash string that may be used to find or remove the job from the queue.
+Add a job. The `time` must be a date object or a timestamp integer (like `Date.now()`) representing the time for the job to be emitted. This method returns a job with a hash field that may be used to find or remove the job from the queue.
 
 ### `var removed = rb.remove(hash)`
 
