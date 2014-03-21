@@ -102,7 +102,9 @@ exports['Removed jobs should not be emitted.'] = function (test) {
 	var rb = new Rubidium();
 	var job = rb.add(Date.now() + 100, 'test');
 
-	rb.remove(job.hash);
+	var removed = rb.remove(job.hash);
+
+	test.deepEqual(removed, job);
 
 	var emitted = false;
 
@@ -116,13 +118,13 @@ exports['Removed jobs should not be emitted.'] = function (test) {
 	}, 200);
 };
 
-exports['Removing a non-existent job should return false.'] = function (test) {
+exports['Removing a non-existent job should return undefined.'] = function (test) {
 	'use strict';
 
 	var rb = new Rubidium();
 	var removed = rb.remove('abcd');
 
-	test.strictEqual(removed, false);
+	test.strictEqual(removed, undefined);
 	test.done();
 };
 
