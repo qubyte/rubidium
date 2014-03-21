@@ -88,9 +88,9 @@ The `time` field may be a either a date object, or a timestamp integer (like `Da
 
 Add a job. The `time` must be a date object or a timestamp integer (like `Date.now()`) representing the time for the job to be emitted. This method returns a job with a hash field that may be used to find or remove the job from the queue.
 
-### `var removed = rb.remove(hash)`
+### `var job = rb.remove(hash)`
 
-Remove a job from a Rubidium instance with the job hash. This function returns `true` if the job existed and was removed, or `false` if the job did not exist.
+Remove a job from a Rubidium instance with the job hash. This function returns a job if the job existed and was removed, or `undefined` if the job did not exist.
 
 ### `var job = rb.find(hash)`
 
