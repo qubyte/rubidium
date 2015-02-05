@@ -1,3 +1,5 @@
+'use strict'
+
 var express = require('express');
 var request = require('request');
 var Rubidium = require('../');
@@ -9,16 +11,12 @@ app.use(express.json());
 
 // In this case, the body is the message and it includes a callback URL.
 app.post('/add/:timestamp', function (req, res) {
-	'use strict';
-
 	rb.add(parseInt(req.params.timestamp, 10), req.body);
 	res.send(202);
 });
 
 // When the job is emitted, send it back to the callback URL.
 rb.on('job', function (job) {
-	'use strict';
-
 	var req;
 
 	// Protect against 'Invalid Request' errors.

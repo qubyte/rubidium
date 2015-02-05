@@ -1,90 +1,70 @@
+'use strict';
+
 var Job = require('../lib/Job.js');
 
-exports['An undefined message should throw'] = function (test) {
-	'use strict';
+var assert = require('assert');
 
-	var job;
-
-	test.throws(function () {
-		job = new Job(new Date());
+describe('Job', function () {
+	it('constructs a job object', function () {
+		assert.ok(new Job(Date.now(), 'test') instanceof Job);
 	});
 
-	test.done();
-};
-
-exports['New instance with timestamp.'] = function (test) {
-	'use strict';
-
-	var now = new Date();
-	var job = new Job(now, 'test');
-
-	test.strictEqual(job.time, now.getTime());
-	test.done();
-};
-
-exports['New instances with time object.'] = function (test) {
-	'use strict';
-
-	var now = Date.now();
-	var job = new Job(now, 'test');
-
-	test.strictEqual(job.time, now);
-	test.done();
-};
-
-exports['New instances with a bad time should throw.'] = function (test) {
-	'use strict';
-
-	var job;
-
-	test.throws(function () {
-		job = new Job(undefined, 'test');
+	it('handles forgotten `new`', function () {
+		/* jshint newcap: false */
+		assert.ok(Job(Date.now(), 'test') instanceof Job);
 	});
 
-	test.done();
-};
+	it('should throw when not constructing with a message', function () {
+		assert.throws(function () {
+			return new Job(new Date());
+		});
+	});
 
-exports['job.stringify should be stable.'] = function (test) {
-	'use strict';
+	it('constructs a job instance when given a date object', function () {
+		var now = new Date();
+		var job = new Job(now, 'test');
 
-	var now = Date.now();
+		assert.strictEqual(job.time, now.getTime());
+	});
 
-	var job1 = new Job(now, { a: 1, b: 2 });
-	var job2 = new Job(now, { b: 2, a: 1 });
+	it('constructs a job instance when given a time integer', function () {
+		var now = Date.now();
+		var job = new Job(now, 'test');
 
-	test.strictEqual(job1.stringify(), job2.stringify());
-	test.done();
-};
+		assert.strictEqual(job.time, now);
+	});
 
-exports['Forgetting new should be ok.'] = function (test) {
-	'use strict';
+	it('throws when given an undefined time', function () {
+		assert.throws(function () {
+			return new Job(undefined, 'test');
+		});
+	});
 
-	/* jshint newcap: false */
+	it('returns a stable stringification of a job when job.stringify is called', function () {
+		var now = Date.now();
 
-	test.ok(Job(Date.now(), 'test') instanceof Job);
-	test.done();
-};
+		var job1 = new Job(now, { a: 1, b: 2 });
+		var job2 = new Job(now, { b: 2, a: 1 });
 
-exports['Hashes should be consistent'] = function (test) {
-	'use strict';
+		assert.equal(job1.stringify(), job2.stringify());
+	});
 
-	var now = Date.now();
-	var jobA = new Job(now, { a: 1, b: 2 });
-	var jobB = new Job(now, { b: 2, a: 1 });
+	it('produces consistent hashes', function () {
+		var now = Date.now();
 
-	test.strictEqual(jobA.hash, jobB.hash);
-	test.done();
-};
+		var job1 = new Job(now, { a: 1, b: 2 });
+		var job2 = new Job(now, { b: 2, a: 1 });
 
-exports['Building jobs from a list of objects'] = function (test) {
-	'use strict';
+		assert.equal(job1.hash, job2.hash);
+	});
 
-	var job1 = { time: new Date(), message: 'one' };
-	var job2 = new Job(Date.now(), 'two');
+	it('builds jobs from a list of plain object', function () {
+		var job1 = { time: new Date(), message: 'one' };
+		var job2 = new Job(Date.now(), 'two');
 
-	var list = Job.fromList([job1, job2]);
+		var list = Job.fromList([job1, job2]);
 
-	test.ok(list[0] instanceof Job);
-	test.ok(list[1] instanceof Job);
-	test.done();
-};
+		assert.ok(list[0] instanceof Job);
+		assert.ok(list[1] instanceof Job);
+	});
+});
