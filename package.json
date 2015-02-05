@@ -1,6 +1,6 @@
 {
   "name": "rubidium",
-  "version": "0.2.0",
+  "version": "1.0.0",
   "description": "A small unique job scheduler.",
   "main": "index.js",
   "scripts": {
@@ -109,7 +109,10 @@
     "disallowSpaceBeforeBinaryOperators": [
       ","
     ],
-    "disallowSpaceBeforePostfixUnaryOperators": true,
+    "disallowSpaceBeforePostfixUnaryOperators": [
+      "++",
+      "--"
+    ],
     "requireSpacesInConditionalExpression": true,
     "disallowSpaceAfterPrefixUnaryOperators": [
       "++",
@@ -118,10 +121,6 @@
       "-",
       "~",
       "!"
-    ],
-    "disallowSpaceBeforePostfixUnaryOperators": [
-      "++",
-      "--"
     ],
     "requireCamelCaseOrUpperCaseIdentifiers": true,
     "disallowKeywords": [
