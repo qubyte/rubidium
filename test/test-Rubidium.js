@@ -1,208 +1,239 @@
+'use strict';
+
 var Rubidium = require('../');
+var Job = require('../lib/Job');
+
 var EventEmitter = require('events').EventEmitter;
+var sinon = require('sinon');
+var assert = require('assert');
 
-exports['Instances should be event emitters.'] = function (test) {
-	'use strict';
-
-	var rb = new Rubidium();
-
-	test.ok(rb instanceof EventEmitter);
-	test.done();
-};
-
-exports['Forgetting new should be ok.'] = function (test) {
-	'use strict';
-
-	/* jshint newcap: false */
-
-	var rb = Rubidium();
-
-	test.ok(rb instanceof Rubidium);
-	test.done();
-};
-
-exports['A job should be emitted.'] = function (test) {
-	'use strict';
-
-	var rb = new Rubidium();
-	var message = 'hi';
-
-	rb.once('job', function (job) {
-		test.strictEqual(job.message, message);
-		test.done();
+describe('Rubidium', function () {
+	before(function () {
+		this.sandbox = sinon.sandbox.create();
 	});
 
-	rb.add(Date.now() + 100, message);
-};
-
-exports['A job should be emitted once.'] = function (test) {
-	'use strict';
-
-	var rb = new Rubidium();
-	var message = 'hi';
-	var counter = 0;
-
-	rb.on('job', function () {
-		counter += 1;
+	beforeEach(function () {
+		this.clock = this.sandbox.useFakeTimers();
+		this.emitSpy = this.sandbox.spy(Rubidium.prototype, 'emit');
 	});
 
-	rb.add(Date.now() + 100, message);
-
-	setTimeout(function () {
-		test.strictEqual(counter, 1);
-		test.done();
-	}, 300);
-};
-
-exports['Jobs submitted in wrong order should emit in the correct order.'] = function (test) {
-	'use strict';
-
-	var rb = new Rubidium();
-	var messages = ['hi', 'bye'];
-	var now = Date.now();
-
-	rb.on('job', function (job) {
-		var expected = messages.shift();
-
-		test.strictEqual(job.message, expected);
-
-		if (!messages.length) {
-			test.done();
-		}
+	afterEach(function () {
+		this.sandbox.restore();
 	});
 
-	rb.add(now + 200, messages[1]);
-	rb.add(now + 100, messages[0]);
-};
-
-exports['Jobs should submitted in order should emit in the correct order.'] = function (test) {
-	'use strict';
-
-	var rb = new Rubidium();
-	var messages = ['hi', 'bye'];
-	var now = Date.now();
-
-	rb.on('job', function (job) {
-		var expected = messages.shift();
-
-		test.strictEqual(job.message, expected);
-
-		if (!messages.length) {
-			test.done();
-		}
+	it('creates event emitters', function () {
+		assert.ok(new Rubidium() instanceof EventEmitter);
 	});
 
-	rb.add(now + 100, messages[0]);
-	rb.add(now + 200, messages[1]);
-};
-
-exports['Removed jobs should not be emitted.'] = function (test) {
-	'use strict';
-
-	var rb = new Rubidium();
-	var job = rb.add(Date.now() + 100, 'test');
-
-	var removed = rb.remove(job.hash);
-
-	test.deepEqual(removed, job);
-
-	var emitted = false;
-
-	rb.on('job', function () {
-		emitted = true;
+	it('handles forgotten `new`', function () {
+		/* jshint newcap: false */
+		assert.ok(Rubidium() instanceof Rubidium);
 	});
 
-	setTimeout(function () {
-		test.ok(!emitted);
-		test.done();
-	}, 200);
-};
+	describe('an instance', function () {
+		describe('add', function () {
+			it('returns the job when add is called', function () {
+				var rb = new Rubidium();
+				var job = rb.add(100, 'hi');
 
-exports['Removing a non-existent job should return undefined.'] = function (test) {
-	'use strict';
+				assert.ok(job instanceof Job);
+				assert.equal(job.message, 'hi');
+			});
 
-	var rb = new Rubidium();
-	var removed = rb.remove('abcd');
+			it('emits "addJob" with the added job when a job is added', function () {
+				var rb = new Rubidium();
+				var addJobStub = this.emitSpy.withArgs('addJob');
 
-	test.strictEqual(removed, undefined);
-	test.done();
-};
+				var job = rb.add(100, 'hi');
 
-exports['Removing the next job should not disrupt the following.'] = function (test) {
-	'use strict';
+				assert.equal(addJobStub.callCount, 1);
+				assert.equal(addJobStub.args[0][1], job);
+			});
 
-	var rb = new Rubidium();
-	var job = rb.add(Date.now() + 100, 'test1');
-	rb.add(Date.now() + 200, 'test2');
-	rb.remove(job.hash);
+			it('emits the added job when the timeout has elapsed', function () {
+				var rb = new Rubidium();
+				var jobEmitStub = this.emitSpy.withArgs('job');
 
-	rb.on('job', function (job) {
-		test.strictEqual(job.message, 'test2');
-		test.done();
+				var job = rb.add(100, 'hi');
+
+				assert.equal(jobEmitStub.callCount, 0);
+
+				this.clock.tick(105);
+
+				assert.equal(jobEmitStub.callCount, 1);
+				assert.equal(jobEmitStub.args[0][1], job);
+			});
+
+			it('emits jobs submitted in wrong order should emit in the correct order', function () {
+				var rb = new Rubidium();
+				var jobEmitStub = this.emitSpy.withArgs('job');
+
+				var job2 = rb.add(200, 'bye');
+				var job1 = rb.add(100, 'hi');
+
+				assert.equal(jobEmitStub.callCount, 0);
+
+				this.clock.tick(105);
+
+				assert.equal(jobEmitStub.callCount, 1);
+				assert.equal(jobEmitStub.args[0][1], job1);
+
+				this.clock.tick(200);
+
+				assert.equal(jobEmitStub.callCount, 2);
+				assert.equal(jobEmitStub.args[1][1], job2);
+			});
+
+			it('emits jobs submitted in order in the correct order', function () {
+				var rb = new Rubidium();
+				var jobEmitStub = this.emitSpy.withArgs('job');
+
+				var job1 = rb.add(100, 'hi');
+				var job2 = rb.add(200, 'bye');
+
+				assert.equal(jobEmitStub.callCount, 0);
+
+				this.clock.tick(105);
+
+				assert.equal(jobEmitStub.callCount, 1);
+				assert.equal(jobEmitStub.args[0][1], job1);
+
+				this.clock.tick(200);
+
+				assert.equal(jobEmitStub.callCount, 2);
+				assert.equal(jobEmitStub.args[1][1], job2);
+			});
+
+			it('emits a job in the next tick when it is scheduled for the past', function () {
+				var rb = new Rubidium();
+				var jobEmitStub = this.emitSpy.withArgs('job');
+
+				var job = rb.add(-100, 'test');
+
+				this.clock.tick(1);
+
+				assert.equal(jobEmitStub.callCount, 1);
+				assert.equal(jobEmitStub.args[0][1], job);
+			});
+		});
+
+		describe('remove', function () {
+			it('returns the job when removeJob is called', function () {
+				var rb = new Rubidium();
+				var job = rb.add(100, 'hi');
+				var removed = rb.remove(job.hash);
+
+				assert.equal(removed, job);
+			});
+
+			it('emits "removeJob" with the removed job when a job is removed', function () {
+				var rb = new Rubidium();
+				var removeJobStub = this.emitSpy.withArgs('removeJob');
+				var job = rb.add(100, 'hi');
+
+				assert.equal(removeJobStub.callCount, 0);
+
+				var removed = rb.remove(job.hash);
+
+				assert.equal(removeJobStub.callCount, 1);
+				assert.equal(removeJobStub.args[0][1], removed);
+			});
+
+			it('does not emit removed jobs with "job"', function () {
+				var rb = new Rubidium();
+				var jobEmitStub = this.emitSpy.withArgs('job');
+
+				var job = rb.add(Date.now() + 100, 'test');
+
+				rb.remove(job.hash);
+
+				this.clock.tick(105);
+
+				assert.equal(jobEmitStub.callCount, 0);
+			});
+
+			it('returns undefined when removing a non-existent job', function () {
+				var rb = new Rubidium();
+				var removed = rb.remove('abcd');
+
+				assert.strictEqual(removed, undefined);
+			});
+
+			it('does not affect the following job when the next is removed', function () {
+				var rb = new Rubidium();
+				var jobEmitStub = this.emitSpy.withArgs('job');
+
+				var job1 = rb.add(100, 'test1');
+				var job2 = rb.add(200, 'test2');
+
+				rb.remove(job1.hash);
+
+				this.clock.tick(105);
+
+				assert.equal(jobEmitStub.callCount, 0);
+
+				this.clock.tick(100);
+
+				assert.equal(jobEmitStub.callCount, 1);
+				assert.equal(jobEmitStub.args[0][1], job2);
+			});
+
+			it('does not affect the job following when a job (not next) is removed', function () {
+				var rb = new Rubidium();
+				var jobEmitStub = this.emitSpy.withArgs('job');
+
+				var job1 = rb.add(100, 'test1');
+				var job2 = rb.add(200, 'test2');
+				var job3 = rb.add(300, 'test3');
+
+				rb.remove(job2.hash);
+
+				this.clock.tick(105);
+
+				assert.equal(jobEmitStub.callCount, 1);
+				assert.equal(jobEmitStub.args[0][1], job1);
+
+				this.clock.tick(100);
+
+				assert.equal(jobEmitStub.callCount, 1);
+
+				this.clock.tick(100);
+
+				assert.equal(jobEmitStub.callCount, 2);
+				assert.equal(jobEmitStub.args[1][1], job3);
+			});
+		});
+
+		describe('find', function () {
+			it('finds the correct job with the find method and a hash', function () {
+				var rb = new Rubidium();
+
+				rb.add(100, 'test');
+
+				var job = rb.add(200, 'test');
+
+				rb.add(300, 'test');
+				rb.add(400, 'test');
+				rb.add(500, 'test');
+
+				assert.equal(rb.find(job.hash), job);
+			});
+
+			it('does not find a non-existent job', function () {
+				var rb = new Rubidium();
+
+				rb.add(100, 'test');
+
+				var job = rb.add(200, 'test');
+
+				rb.add(300, 'test');
+				rb.add(400, 'test');
+				rb.add(500, 'test');
+
+				rb.remove(job.hash);
+
+				assert.strictEqual(rb.find(job.hash), undefined);
+			});
+		});
 	});
-};
-
-exports['Removing a job (not next) should not disrupt the next.'] = function (test) {
-	'use strict';
-
-	var rb = new Rubidium();
-	rb.add(Date.now() + 100, 'test1');
-	var job = rb.add(Date.now() + 200, 'test2');
-	rb.remove(job.hash);
-
-	rb.on('job', function (job) {
-		test.strictEqual(job.message, 'test1');
-		test.done();
-	});
-};
-
-exports['A job scheduled in the past should still be emitted.'] = function (test) {
-	'use strict';
-
-	var rb = new Rubidium();
-	rb.add(Date.now() - 100, 'test1');
-	rb.add(Date.now() + 100, 'test2');
-
-	rb.once('job', function (job) {
-		test.strictEqual(job.message, 'test1');
-		test.done();
-	});
-};
-
-exports['Find should get the correct job.'] = function (test) {
-	'use strict';
-
-	var rb = new Rubidium();
-	var hash;
-
-	for (var i = 0; i < 10; i++) {
-		var job = rb.add(Date.now() + i, i);
-
-		if (i === 5) {
-			hash = job.hash;
-		}
-	}
-
-	test.strictEqual(rb.find(hash).message, 5);
-	test.done();
-};
-
-exports['Find should not find a non-existent job.'] = function (test) {
-	'use strict';
-
-	var rb = new Rubidium();
-	var hash;
-
-	for (var i = 0; i < 10; i++) {
-		var hashi = rb.add(Date.now() + i, i);
-
-		if (i === 0) {
-			hash = hashi;
-		}
-	}
-
-	rb.once('job', function () {
-		test.strictEqual(rb.find(hash), undefined);
-		test.done();
-	});
-};
+});
