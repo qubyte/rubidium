@@ -1,4 +1,4 @@
-'use strict'
+'use strict';
 
 var express = require('express');
 var request = require('request');
@@ -32,7 +32,5 @@ rb.on('job', function (job) {
 });
 
 app.listen(8080, function () {
-	'use strict';
-
 	console.log('At server running on port 8080.');
 });
