@@ -4,28 +4,27 @@
   "description": "A small unique job scheduler.",
   "main": "index.js",
   "scripts": {
-    "test": "jshint *.js ./lib/*.js ./test/*.js && jscs *.js ./lib/*.js ./test/*.js && mocha test",
-    "coveralls": "istanbul cover _mocha --report lcovonly && cat ./coverage/lcov.info | coveralls --verbose"
+    "build": "rimraf build && mkdirp build && node build.js",
+    "prepublish": "npm run build",
+    "test": "npm run build && mocha"
   },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/qubyte/rubidium"
-  },
-  "dependencies": {
-    "json-stable-stringify": "1.0.0"
-  },
+  "repository": "github:qubyte/rubidium",
   "devDependencies": {
-    "coveralls": "2.11.2",
-    "istanbul": "0.3.5",
-    "jscs": "1.10.0",
-    "jshint": "2.6.0",
+    "eslint": "2.11.1",
+    "git-sha1": "0.1.2",
+    "json-stable-stringify": "1.0.0",
+    "mkdirp": "0.5.1",
     "mocha": "2.1.0",
-    "mocha-lcov-reporter": "0.0.1",
-    "sinon": "1.12.2"
+    "rimraf": "2.5.2",
+    "rollup": "0.29.0",
+    "rollup-plugin-commonjs": "3.0.0",
+    "rollup-plugin-node-resolve": "1.7.0",
+    "sinon": "1.12.2",
+    "vertebrate-event-emitter": "3.1.0"
   },
   "files": [
-    "index.js",
-    "lib"
+    "build/rubidium.umd.js",
+    "build/rubidium.es6.js"
   ],
   "keywords": [
     "cron",
@@ -34,122 +33,5 @@
     "atd"
   ],
   "author": "Mark Stanley Everitt",
-  "license": "MIT",
-  "jshintConfig": {
-    "bitwise": true,
-    "camelcase": true,
-    "curly": true,
-    "eqeqeq": true,
-    "forin": false,
-    "immed": true,
-    "indent": 4,
-    "latedef": true,
-    "newcap": true,
-    "noarg": true,
-    "noempty": true,
-    "nonew": true,
-    "plusplus": false,
-    "quotmark": "single",
-    "undef": true,
-    "unused": true,
-    "strict": true,
-    "trailing": true,
-    "maxparams": 4,
-    "maxdepth": 3,
-    "maxstatements": 15,
-    "maxcomplexity": 11,
-    "maxlen": 100,
-    "smarttabs": true,
-    "node": true,
-    "mocha": true,
-    "browser": true,
-    "esnext": true
-  },
-  "jscsConfig": {
-    "requireCurlyBraces": [
-      "if",
-      "else",
-      "for",
-      "while",
-      "do",
-      "try",
-      "catch",
-      "case",
-      "default"
-    ],
-    "requireSpaceAfterKeywords": [
-      "if",
-      "else",
-      "for",
-      "while",
-      "do",
-      "switch",
-      "return",
-      "try",
-      "catch"
-    ],
-    "requireParenthesesAroundIIFE": true,
-    "requireSpacesInAnonymousFunctionExpression": {
-      "beforeOpeningRoundBrace": true,
-      "beforeOpeningCurlyBrace": true
-    },
-    "requireSpacesInNamedFunctionExpression": {
-      "beforeOpeningCurlyBrace": true
-    },
-    "disallowSpacesInNamedFunctionExpression": {
-      "beforeOpeningRoundBrace": true
-    },
-    "disallowMultipleVarDecl": true,
-    "disallowSpacesInsideArrayBrackets": true,
-    "requireSpacesInsideObjectBrackets": "all",
-    "disallowQuotedKeysInObjects": true,
-    "disallowSpaceAfterObjectKeys": true,
-    "requireCommaBeforeLineBreak": true,
-    "requireSpaceBeforeBinaryOperators": true,
-    "disallowSpaceBeforeBinaryOperators": [
-      ","
-    ],
-    "disallowSpaceBeforePostfixUnaryOperators": [
-      "++",
-      "--"
-    ],
-    "requireSpacesInConditionalExpression": true,
-    "disallowSpaceAfterPrefixUnaryOperators": [
-      "++",
-      "--",
-      "+",
-      "-",
-      "~",
-      "!"
-    ],
-    "requireCamelCaseOrUpperCaseIdentifiers": true,
-    "disallowKeywords": [
-      "with"
-    ],
-    "disallowMultipleLineStrings": true,
-    "validateLineBreaks": "LF",
-    "validateQuoteMarks": {
-      "mark": "'",
-      "escape": true
-    },
-    "validateIndentation": "\t",
-    "disallowMixedSpacesAndTabs": "smart",
-    "disallowTrailingWhitespace": true,
-    "disallowKeywordsOnNewLine": [
-      "else",
-      "catch"
-    ],
-    "requireLineFeedAtFileEnd": true,
-    "maximumLineLength": 100,
-    "requireCapitalizedConstructors": true,
-    "requireDotNotation": true,
-    "validateJSDoc": {
-      "checkParamNames": true,
-      "checkRedundantParams": true,
-      "requireParamTypes": true
-    },
-    "excludeFiles": [
-      "node_modules/**"
-    ]
-  }
+  "license": "MIT"
 }
