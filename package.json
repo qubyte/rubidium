@@ -11,8 +11,6 @@
   "repository": "github:qubyte/rubidium",
   "devDependencies": {
     "eslint": "2.11.1",
-    "git-sha1": "0.1.2",
-    "json-stable-stringify": "1.0.0",
     "mkdirp": "0.5.1",
     "mocha": "2.1.0",
     "rimraf": "2.5.2",
@@ -20,6 +18,7 @@
     "rollup-plugin-commonjs": "3.0.0",
     "rollup-plugin-node-resolve": "1.7.0",
     "sinon": "1.12.2",
+    "uuid-js": "0.7.5",
     "vertebrate-event-emitter": "3.1.0"
   },
   "files": [
