@@ -1,0 +1,17 @@
+{
+  "name": "at-server",
+  "version": "1.0.0",
+  "description": "An example atd-like server over HTTP.",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node ."
+  },
+  "author": "Mark Stanley Everitt",
+  "license": "MIT",
+  "dependencies": {
+    "node-fetch": "1.5.3",
+    "toisu": "3.0.2",
+    "toisu-body": "1.0.1",
+    "toisu-router": "3.0.2"
+  }
+}
