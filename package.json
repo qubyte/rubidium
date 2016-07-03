@@ -6,7 +6,7 @@
   "scripts": {
     "build": "rimraf build && mkdirp build && node build.js",
     "prepublish": "npm run build",
-    "test": "npm run build && mocha"
+    "test": "npm run build -- test && mocha"
   },
   "repository": "github:qubyte/rubidium",
   "devDependencies": {
@@ -15,10 +15,8 @@
     "mocha": "2.1.0",
     "rimraf": "2.5.2",
     "rollup": "0.29.0",
-    "rollup-plugin-commonjs": "3.0.0",
     "rollup-plugin-node-resolve": "1.7.0",
     "sinon": "1.12.2",
-    "uuid-js": "0.7.5",
     "vertebrate-event-emitter": "3.1.0"
   },
   "files": [

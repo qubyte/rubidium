@@ -1,35 +1,38 @@
 'use strict';
 
 const rollup = require('rollup');
-const commonjs = require('rollup-plugin-commonjs');
 const nodeResolve = require('rollup-plugin-node-resolve');
 
-const config = {
-    entry: 'lib/Rubidium.js',
-    plugins: [
-        nodeResolve({
-            jsnext: true,
-            main: true
-        }),
+const plugins = [
+    nodeResolve({ jsnext: true })
+];
 
-        commonjs({
-            include: 'node_modules/**',
-            ignoreGlobal: true
+function buildProduction() {
+    return rollup.rollup({ entry: 'lib/Rubidium.js', plugins })
+        .then(bundle => {
+            bundle.write({
+                format: 'umd',
+                moduleName: 'Rubidium',
+                dest: 'build/rubidium.umd.js'
+            });
+
+            bundle.write({
+                format: 'es6',
+                dest: 'build/rubidium.es6.js'
+            });
         })
-    ]
-};
+        .catch(console.error); // eslint-disable-line no-console
+}
 
-module.exports = rollup.rollup(config)
-    .then(bundle => {
-        bundle.write({
-            format: 'umd',
-            moduleName: 'Rubidium',
-            dest: 'build/rubidium.umd.js'
-        });
+function buildTest() {
+    const rubidiumPromise = rollup.rollup({ entry: 'lib/Rubidium.js', plugins })
+        .then(bundle => bundle.write({ format: 'cjs', dest: 'build/rubidium.common.js' }));
 
-        bundle.write({
-            format: 'es6',
-            dest: 'build/rubidium.es6.js'
-        });
-    })
-    .catch(console.error); // eslint-disable-line no-console
+    const uuidPromise = rollup.rollup({ entry: 'lib/uuidv4' })
+        .then(bundle => bundle.write({ format: 'cjs', dest: 'build/uuidv4.common.js' }));
+
+    return Promise.all([rubidiumPromise, uuidPromise])
+        .catch(console.error); // eslint-disable-line no-console
+}
+
+module.exports = process.argv.indexOf('test') === -1 ? buildProduction() : buildTest();
