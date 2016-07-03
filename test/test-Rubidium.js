@@ -1,6 +1,6 @@
 'use strict';
 
-const Rubidium = require('../build/rubidium.umd.js');
+const Rubidium = require('../build/rubidium.common.js');
 
 const sinon = require('sinon');
 const assert = require('assert');
