@@ -1,239 +1,533 @@
 'use strict';
 
-var Rubidium = require('../');
-var Job = require('../lib/Job');
+const Rubidium = require('../build/rubidium.common.js');
 
-var EventEmitter = require('events').EventEmitter;
-var sinon = require('sinon');
-var assert = require('assert');
+const sinon = require('sinon');
+const assert = require('assert');
 
-describe('Rubidium', function () {
-	before(function () {
-		this.sandbox = sinon.sandbox.create();
-	});
+describe('Rubidium', () => {
+    let callback;
+    let clock;
+    let rb;
 
-	beforeEach(function () {
-		this.clock = this.sandbox.useFakeTimers();
-		this.emitSpy = this.sandbox.spy(Rubidium.prototype, 'emit');
-	});
+    beforeEach(() => {
+        callback = sinon.stub();
+        rb = new Rubidium();
+        clock = sinon.useFakeTimers();
+    });
 
-	afterEach(function () {
-		this.sandbox.restore();
-	});
+    afterEach(() => {
+        rb.clear();
+        clock.restore();
+    });
 
-	it('creates event emitters', function () {
-		assert.ok(new Rubidium() instanceof EventEmitter);
-	});
+    describe('add', () => {
+        describe('not silenced', () => {
+            it('returns the job when add is called', () => {
+                const job = rb.add({ time: 100, message: 'hi' });
 
-	it('handles forgotten `new`', function () {
-		/* jshint newcap: false */
-		assert.ok(Rubidium() instanceof Rubidium);
-	});
+                assert.equal(job.time, 100);
+                assert.equal(job.message, 'hi');
+            });
 
-	describe('an instance', function () {
-		describe('add', function () {
-			it('returns the job when add is called', function () {
-				var rb = new Rubidium();
-				var job = rb.add(100, 'hi');
+            it('emits "addJob" with the added job when a job is added', () => {
+                rb.on('addJob', callback);
 
-				assert.ok(job instanceof Job);
-				assert.equal(job.message, 'hi');
-			});
+                const job = rb.add({ time: 100, message: 'hi' });
 
-			it('emits "addJob" with the added job when a job is added', function () {
-				var rb = new Rubidium();
-				var addJobStub = this.emitSpy.withArgs('addJob');
+                assert.equal(callback.callCount, 1);
+                assert.equal(callback.args[0][0], job);
+            });
 
-				var job = rb.add(100, 'hi');
+            it('adds a uuid to an added job when it does not have one', () => {
+                const job = rb.add({ time: 100, message: 'hi' });
 
-				assert.equal(addJobStub.callCount, 1);
-				assert.equal(addJobStub.args[0][1], job);
-			});
+                assert.equal(typeof job.uuid, 'string');
+                assert.ok(job.uuid.length);
+            });
 
-			it('emits the added job when the timeout has elapsed', function () {
-				var rb = new Rubidium();
-				var jobEmitStub = this.emitSpy.withArgs('job');
+            it('does not change the uuid when the the added job has one', () => {
+                const job = rb.add({ time: 100, message: 'hi', uuid: 'abcd' });
 
-				var job = rb.add(100, 'hi');
+                assert.equal(job.uuid, 'abcd');
+            });
 
-				assert.equal(jobEmitStub.callCount, 0);
+            it('emits the added job when the timeout has elapsed', () => {
+                rb.on('job', callback);
 
-				this.clock.tick(105);
+                const job = rb.add({ time: 100, message: 'hi' });
 
-				assert.equal(jobEmitStub.callCount, 1);
-				assert.equal(jobEmitStub.args[0][1], job);
-			});
+                assert.equal(callback.callCount, 0);
 
-			it('emits jobs submitted in wrong order should emit in the correct order', function () {
-				var rb = new Rubidium();
-				var jobEmitStub = this.emitSpy.withArgs('job');
+                clock.tick(105);
 
-				var job2 = rb.add(200, 'bye');
-				var job1 = rb.add(100, 'hi');
+                assert.equal(callback.callCount, 1);
+                assert.equal(callback.args[0][0], job);
+            });
 
-				assert.equal(jobEmitStub.callCount, 0);
+            it('emits jobs submitted in wrong order in the correct order', () => {
+                rb.on('job', callback);
 
-				this.clock.tick(105);
+                const job2 = rb.add({ time: 200, message: 'bye' });
+                const job1 = rb.add({ time: 100, message: 'hi' });
 
-				assert.equal(jobEmitStub.callCount, 1);
-				assert.equal(jobEmitStub.args[0][1], job1);
+                assert.equal(callback.callCount, 0);
 
-				this.clock.tick(200);
+                clock.tick(105);
 
-				assert.equal(jobEmitStub.callCount, 2);
-				assert.equal(jobEmitStub.args[1][1], job2);
-			});
+                assert.equal(callback.callCount, 1);
+                assert.equal(callback.args[0][0], job1);
 
-			it('emits jobs submitted in order in the correct order', function () {
-				var rb = new Rubidium();
-				var jobEmitStub = this.emitSpy.withArgs('job');
+                clock.tick(200);
 
-				var job1 = rb.add(100, 'hi');
-				var job2 = rb.add(200, 'bye');
+                assert.equal(callback.callCount, 2);
+                assert.equal(callback.args[1][0], job2);
+            });
 
-				assert.equal(jobEmitStub.callCount, 0);
+            it('emits jobs submitted in order in the correct order', () => {
+                rb.on('job', callback);
 
-				this.clock.tick(105);
+                const job1 = rb.add({ time: 100, message: 'hi' });
+                const job2 = rb.add({ time: 200, message: 'bye' });
 
-				assert.equal(jobEmitStub.callCount, 1);
-				assert.equal(jobEmitStub.args[0][1], job1);
+                assert.equal(callback.callCount, 0);
 
-				this.clock.tick(200);
+                clock.tick(105);
 
-				assert.equal(jobEmitStub.callCount, 2);
-				assert.equal(jobEmitStub.args[1][1], job2);
-			});
+                assert.equal(callback.callCount, 1);
+                assert.equal(callback.args[0][0], job1);
 
-			it('emits a job in the next tick when it is scheduled for the past', function () {
-				var rb = new Rubidium();
-				var jobEmitStub = this.emitSpy.withArgs('job');
+                clock.tick(200);
 
-				var job = rb.add(-100, 'test');
+                assert.equal(callback.callCount, 2);
+                assert.equal(callback.args[1][0], job2);
+            });
 
-				this.clock.tick(1);
+            it('emits a job in the next tick when it is scheduled for the past', () => {
+                rb.on('job', callback);
 
-				assert.equal(jobEmitStub.callCount, 1);
-				assert.equal(jobEmitStub.args[0][1], job);
-			});
-		});
+                const job = rb.add({ time: -100, message: 'test' });
 
-		describe('remove', function () {
-			it('returns the job when removeJob is called', function () {
-				var rb = new Rubidium();
-				var job = rb.add(100, 'hi');
-				var removed = rb.remove(job.hash);
+                clock.tick(1);
 
-				assert.equal(removed, job);
-			});
+                assert.equal(callback.callCount, 1);
+                assert.equal(callback.args[0][0], job);
+            });
 
-			it('emits "removeJob" with the removed job when a job is removed', function () {
-				var rb = new Rubidium();
-				var removeJobStub = this.emitSpy.withArgs('removeJob');
-				var job = rb.add(100, 'hi');
+            it('emits a job beyond the resolution of setTimeout', () => {
+                rb.on('job', callback);
 
-				assert.equal(removeJobStub.callCount, 0);
+                const job = rb.add({ time: 3e9, message: 'test' });
 
-				var removed = rb.remove(job.hash);
+                clock.tick(10);
 
-				assert.equal(removeJobStub.callCount, 1);
-				assert.equal(removeJobStub.args[0][1], removed);
-			});
+                assert.equal(callback.callCount, 0);
 
-			it('does not emit removed jobs with "job"', function () {
-				var rb = new Rubidium();
-				var jobEmitStub = this.emitSpy.withArgs('job');
+                clock.tick(3e9);
 
-				var job = rb.add(Date.now() + 100, 'test');
+                assert.equal(callback.callCount, 1);
+                assert.equal(callback.args[0][0], job);
+            });
+        });
 
-				rb.remove(job.hash);
+        describe('silenced', () => {
+            it('returns the job when add is called', () => {
+                const job = rb.add({ time: 100, message: 'hi' }, true);
 
-				this.clock.tick(105);
+                assert.equal(job.time, 100);
+                assert.equal(job.message, 'hi');
+            });
 
-				assert.equal(jobEmitStub.callCount, 0);
-			});
+            it('does not emit "addJob"', () => {
+                rb.on('addJob', callback);
+                rb.add({ time: 100, message: 'hi' }, true);
 
-			it('returns undefined when removing a non-existent job', function () {
-				var rb = new Rubidium();
-				var removed = rb.remove('abcd');
+                assert.equal(callback.callCount, 0);
+            });
 
-				assert.strictEqual(removed, undefined);
-			});
+            it('adds a uuid to an added job when it does not have one', () => {
+                const job = rb.add({ time: 100, message: 'hi' }, true);
 
-			it('does not affect the following job when the next is removed', function () {
-				var rb = new Rubidium();
-				var jobEmitStub = this.emitSpy.withArgs('job');
+                assert.equal(typeof job.uuid, 'string');
+                assert.ok(job.uuid.length);
+            });
 
-				var job1 = rb.add(100, 'test1');
-				var job2 = rb.add(200, 'test2');
+            it('does not change the uuid when the the added job has one', () => {
+                const job = rb.add({ time: 100, message: 'hi', uuid: 'abcd' }, true);
 
-				rb.remove(job1.hash);
+                assert.equal(job.uuid, 'abcd');
+            });
 
-				this.clock.tick(105);
+            it('emits the added job when the timeout has elapsed', () => {
+                rb.on('job', callback);
 
-				assert.equal(jobEmitStub.callCount, 0);
+                const job = rb.add({ time: 100, message: 'hi' }, true);
 
-				this.clock.tick(100);
+                assert.equal(callback.callCount, 0);
 
-				assert.equal(jobEmitStub.callCount, 1);
-				assert.equal(jobEmitStub.args[0][1], job2);
-			});
+                clock.tick(105);
 
-			it('does not affect the job following when a job (not next) is removed', function () {
-				var rb = new Rubidium();
-				var jobEmitStub = this.emitSpy.withArgs('job');
+                assert.equal(callback.callCount, 1);
+                assert.equal(callback.args[0][0], job);
+            });
 
-				var job1 = rb.add(100, 'test1');
-				var job2 = rb.add(200, 'test2');
-				var job3 = rb.add(300, 'test3');
+            it('emits jobs submitted in wrong order in the correct order', () => {
+                rb.on('job', callback);
 
-				rb.remove(job2.hash);
+                const job2 = rb.add({ time: 200, message: 'bye' }, true);
+                const job1 = rb.add({ time: 100, message: 'hi' }, true);
 
-				this.clock.tick(105);
+                assert.equal(callback.callCount, 0);
 
-				assert.equal(jobEmitStub.callCount, 1);
-				assert.equal(jobEmitStub.args[0][1], job1);
+                clock.tick(105);
 
-				this.clock.tick(100);
+                assert.equal(callback.callCount, 1);
+                assert.equal(callback.args[0][0], job1);
 
-				assert.equal(jobEmitStub.callCount, 1);
+                clock.tick(200);
 
-				this.clock.tick(100);
+                assert.equal(callback.callCount, 2);
+                assert.equal(callback.args[1][0], job2);
+            });
 
-				assert.equal(jobEmitStub.callCount, 2);
-				assert.equal(jobEmitStub.args[1][1], job3);
-			});
-		});
+            it('emits jobs submitted in order in the correct order', () => {
+                rb.on('job', callback);
 
-		describe('find', function () {
-			it('finds the correct job with the find method and a hash', function () {
-				var rb = new Rubidium();
+                const job1 = rb.add({ time: 100, message: 'hi' }, true);
+                const job2 = rb.add({ time: 200, message: 'bye' }, true);
 
-				rb.add(100, 'test');
+                assert.equal(callback.callCount, 0);
 
-				var job = rb.add(200, 'test');
+                clock.tick(105);
 
-				rb.add(300, 'test');
-				rb.add(400, 'test');
-				rb.add(500, 'test');
+                assert.equal(callback.callCount, 1);
+                assert.equal(callback.args[0][0], job1);
 
-				assert.equal(rb.find(job.hash), job);
-			});
+                clock.tick(200);
 
-			it('does not find a non-existent job', function () {
-				var rb = new Rubidium();
+                assert.equal(callback.callCount, 2);
+                assert.equal(callback.args[1][0], job2);
+            });
 
-				rb.add(100, 'test');
+            it('emits a job in the next tick when it is scheduled for the past', () => {
+                rb.on('job', callback);
 
-				var job = rb.add(200, 'test');
+                const job = rb.add({ time: -100, message: 'test' }, true);
 
-				rb.add(300, 'test');
-				rb.add(400, 'test');
-				rb.add(500, 'test');
+                clock.tick(1);
 
-				rb.remove(job.hash);
+                assert.equal(callback.callCount, 1);
+                assert.equal(callback.args[0][0], job);
+            });
 
-				assert.strictEqual(rb.find(job.hash), undefined);
-			});
-		});
-	});
+            it('emits a job beyond the resolution of setTimeout', () => {
+                rb.on('job', callback);
+
+                const job = rb.add({ time: 3e9, message: 'test' }, true);
+
+                clock.tick(10);
+
+                assert.equal(callback.callCount, 0);
+
+                clock.tick(3e9);
+
+                assert.equal(callback.callCount, 1);
+                assert.equal(callback.args[0][0], job);
+            });
+        });
+    });
+
+    describe('remove', () => {
+        describe('not silenced', () => {
+            it('returns the job when removeJob is called', () => {
+                const job = rb.add({ time: 100, message: 'hi' });
+                const removed = rb.remove(job.uuid);
+
+                assert.equal(removed, job);
+            });
+
+            it('emits "removeJob"', () => {
+                rb.on('removeJob', callback);
+
+                const job = rb.add({ time: 100, message: 'hi' });
+
+                assert.equal(callback.callCount, 0);
+
+                rb.remove(job.uuid);
+
+                assert.equal(callback.callCount, 1);
+                assert.equal(callback.args[0][0], job);
+            });
+
+            it('does not emit removed jobs with "job"', () => {
+                rb.on('job', callback);
+
+                const job = rb.add({ time: Date.now() + 100, message: 'test' });
+
+                rb.remove(job.uuid);
+
+                clock.tick(105);
+
+                assert.equal(callback.callCount, 0);
+            });
+
+            it('returns undefined when removing a non-existent job', () => {
+                const removed = rb.remove('abcd');
+
+                assert.strictEqual(removed, undefined);
+            });
+
+            it('does not affect the following job when the next is removed', () => {
+                rb.on('job', callback);
+
+                const job1 = rb.add({ time: 100, message: 'test1' });
+                const job2 = rb.add({ time: 200, message: 'test2' });
+
+                rb.remove(job1.uuid);
+
+                clock.tick(105);
+
+                assert.equal(callback.callCount, 0);
+
+                clock.tick(100);
+
+                assert.equal(callback.callCount, 1);
+                assert.equal(callback.args[0][0], job2);
+            });
+
+            it('does not affect the job following when a job (not next) is removed', () => {
+                rb.on('job', callback);
+
+                const job2 = rb.add({ time: 200, message: 'test2' });
+                const job1 = rb.add({ time: 100, message: 'test1' });
+                const job3 = rb.add({ time: 300, message: 'test3' });
+
+                rb.remove(job2.uuid);
+
+                clock.tick(105);
+
+                assert.equal(callback.callCount, 1);
+                assert.equal(callback.args[0][0], job1);
+
+                clock.tick(100);
+
+                assert.equal(callback.callCount, 1);
+
+                clock.tick(100);
+
+                assert.equal(callback.callCount, 2);
+                assert.equal(callback.args[1][0], job3);
+            });
+        });
+
+        describe('silenced', () => {
+            it('returns the job when removeJob is called', () => {
+                const job = rb.add({ time: 100, message: 'hi' });
+                const removed = rb.remove(job.uuid, true);
+
+                assert.equal(removed, job);
+            });
+
+            it('does not emit "removeJob"', () => {
+                rb.on('removeJob', callback);
+
+                const job = rb.add({ time: 100, message: 'hi' });
+
+                assert.equal(callback.callCount, 0);
+
+                rb.remove(job.uuid, true);
+
+                assert.equal(callback.callCount, 0);
+            });
+
+            it('does not emit removed jobs with "job"', () => {
+                rb.on('job', callback);
+
+                const job = rb.add({ time: Date.now() + 100, message: 'test' });
+
+                rb.remove(job.uuid, true);
+
+                clock.tick(105);
+
+                assert.equal(callback.callCount, 0);
+            });
+
+            it('returns undefined when removing a non-existent job', () => {
+                const removed = rb.remove('abcd', true);
+
+                assert.strictEqual(removed, undefined);
+            });
+
+            it('does not affect the following job when the next is removed', () => {
+                rb.on('job', callback);
+
+                const job1 = rb.add({ time: 100, message: 'test1' });
+                const job2 = rb.add({ time: 200, message: 'test2' });
+
+                rb.remove(job1.uuid, true);
+
+                clock.tick(105);
+
+                assert.equal(callback.callCount, 0);
+
+                clock.tick(100);
+
+                assert.equal(callback.callCount, 1);
+                assert.equal(callback.args[0][0], job2);
+            });
+
+            it('does not affect the job following when a job (not next) is removed', () => {
+                rb.on('job', callback);
+
+                const job2 = rb.add({ time: 200, message: 'test2' });
+                const job1 = rb.add({ time: 100, message: 'test1' });
+                const job3 = rb.add({ time: 300, message: 'test3' });
+
+                rb.remove(job2.uuid, true);
+
+                clock.tick(105);
+
+                assert.equal(callback.callCount, 1);
+                assert.equal(callback.args[0][0], job1);
+
+                clock.tick(100);
+
+                assert.equal(callback.callCount, 1);
+
+                clock.tick(100);
+
+                assert.equal(callback.callCount, 2);
+                assert.equal(callback.args[1][0], job3);
+            });
+        });
+    });
+
+    describe('find', () => {
+        it('finds the correct job with the find method and a uuid', () => {
+            rb.add({ time: 100, message: 'test' });
+
+            const job = rb.add({ time: 200, message: 'test' });
+
+            rb.add({ time: 300, message: 'test' });
+            rb.add({ time: 400, message: 'test' });
+            rb.add({ time: 500, message: 'test' });
+
+            assert.equal(rb.find(job.uuid), job);
+        });
+
+        it('does not find a non-existent job', () => {
+            rb.add({ time: 100, message: 'test' });
+
+            const job = rb.add({ time: 200, message: 'test' });
+
+            rb.add({ time: 300, message: 'test' });
+            rb.add({ time: 400, message: 'test' });
+            rb.add({ time: 500, message: 'test' });
+
+            rb.remove(job.uuid);
+
+            assert.strictEqual(rb.find(job.uuid), undefined);
+        });
+    });
+
+    describe('clear', () => {
+        let clearCallback;
+        let removeCallback;
+        let jobs;
+
+        beforeEach(() => {
+            clearCallback = sinon.stub();
+            removeCallback = sinon.stub();
+
+            rb.on('job', callback);
+            rb.on('clearJobs', clearCallback);
+            rb.on('removeJob', removeCallback);
+
+            jobs = [
+                rb.add({ time: 200, message: 'test2' }),
+                rb.add({ time: 100, message: 'test1' }),
+                rb.add({ time: 300, message: 'test3' })
+            ];
+        });
+
+        describe('not silenced', () => {
+            beforeEach(() => {
+                rb.clear();
+            });
+
+            it('emits "clearJobs"', () => {
+                assert.equal(clearCallback.callCount, 1);
+            });
+
+            it('emits "removeJob" for each job', () => {
+                assert.equal(removeCallback.callCount, 3);
+
+                for (const job of jobs) {
+                    assert.ok(removeCallback.calledWithExactly(job));
+                }
+            });
+
+            it('prevents previously scheduled jobs from being emitted', () => {
+                clock.tick(310);
+
+                assert.equal(callback.callCount, 0);
+            });
+        });
+
+        describe('silenced', () => {
+            beforeEach(() => {
+                rb.clear(true);
+            });
+
+            it('does not emit "clearJobs"', () => {
+                assert.equal(clearCallback.callCount, 0);
+            });
+
+            it('does not emit "removeJob"', () => {
+                assert.equal(removeCallback.callCount, 0);
+            });
+
+            it('prevents previously scheduled jobs from being emitted', () => {
+                clock.tick(310);
+
+                assert.equal(callback.callCount, 0);
+            });
+        });
+    });
+
+    describe('hasPendingJobs', () => {
+        it('is false before jobs are added', () => {
+            assert.strictEqual(rb.hasPendingJobs, false);
+        });
+
+        it('is true when a job is added', () => {
+            rb.add({ time: 100, message: 'test1' });
+
+            assert.strictEqual(rb.hasPendingJobs, true);
+        });
+
+        it('is false once all jobs have been emitted', () => {
+            rb.add({ time: 100, message: 'test1' });
+
+            clock.tick(110);
+
+            assert.strictEqual(rb.hasPendingJobs, false);
+        });
+
+        it('is false once all jobs have been removed', () => {
+            const job = rb.add({ time: 100, message: 'test1' });
+
+            rb.remove(job.uuid);
+
+            assert.strictEqual(rb.hasPendingJobs, false);
+        });
+
+        it('is false once all jobs have been cleared', () => {
+            rb.add({ time: 100, message: 'test1' });
+
+            rb.clear();
+
+            assert.strictEqual(rb.hasPendingJobs, false);
+        });
+    });
 });
