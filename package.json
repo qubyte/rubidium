@@ -2,7 +2,8 @@
   "name": "rubidium",
   "version": "2.0.0",
   "description": "A small unique job scheduler.",
-  "main": "index.js",
+  "main": "build/rubidium.umd.js",
+  "jsnext:main": "build/rubidium.es6.js",
   "scripts": {
     "build": "rimraf build && mkdirp build && node build.js",
     "prepublish": "npm run build",
