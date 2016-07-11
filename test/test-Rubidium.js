@@ -108,6 +108,8 @@ describe('Rubidium', () => {
 
                 const job = rb.add({ time: -100, message: 'test' });
 
+                assert.equal(callback.callCount, 0);
+
                 clock.tick(1);
 
                 assert.equal(callback.callCount, 1);
@@ -127,6 +129,27 @@ describe('Rubidium', () => {
 
                 assert.equal(callback.callCount, 1);
                 assert.equal(callback.args[0][0], job);
+            });
+
+            it('emits clustered jobs simultaneously', () => {
+                rb.on('job', callback);
+
+                const jobs = [
+                    rb.add({ time: 100, message: 'test0' }),
+                    rb.add({ time: 100, message: 'test1' }),
+                    rb.add({ time: 100, message: 'test2' })
+                ];
+
+                clock.tick(10);
+
+                assert.equal(callback.callCount, 0);
+
+                clock.tick(90);
+
+                assert.equal(callback.callCount, 3);
+                assert.ok(callback.calledWithExactly(jobs[0]));
+                assert.ok(callback.calledWithExactly(jobs[1]));
+                assert.ok(callback.calledWithExactly(jobs[2]));
             });
         });
 
@@ -214,6 +237,8 @@ describe('Rubidium', () => {
 
                 const job = rb.add({ time: -100, message: 'test' }, true);
 
+                assert.equal(callback.callCount, 0);
+
                 clock.tick(1);
 
                 assert.equal(callback.callCount, 1);
@@ -233,6 +258,27 @@ describe('Rubidium', () => {
 
                 assert.equal(callback.callCount, 1);
                 assert.equal(callback.args[0][0], job);
+            });
+
+            it('emits clustered jobs simultaneously', () => {
+                rb.on('job', callback);
+
+                const jobs = [
+                    rb.add({ time: 100, message: 'test0' }),
+                    rb.add({ time: 100, message: 'test1' }),
+                    rb.add({ time: 100, message: 'test2' })
+                ];
+
+                clock.tick(10);
+
+                assert.equal(callback.callCount, 0);
+
+                clock.tick(90);
+
+                assert.equal(callback.callCount, 3);
+                assert.ok(callback.calledWithExactly(jobs[0]));
+                assert.ok(callback.calledWithExactly(jobs[1]));
+                assert.ok(callback.calledWithExactly(jobs[2]));
             });
         });
     });
