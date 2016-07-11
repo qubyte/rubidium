@@ -1,3 +1,13 @@
+# 2.0.2
+
+Private API refactor with a net reduction in code.
+
+This release includes a fix which means that, after a job is emitted, if one or
+more subsequent jobs are due then they will be emitted immediately. Previously
+each job emission would set a new timeout, meaning at least a tick of delay.
+Lots of jobs close together could appear to be delayed as the queue was
+processed.
+
 # 2.0.0
 
 Complete rewrite!
