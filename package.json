@@ -11,14 +11,14 @@
   },
   "repository": "github:qubyte/rubidium",
   "devDependencies": {
-    "eslint": "2.11.1",
+    "eslint": "4.6.1",
     "mkdirp": "0.5.1",
-    "mocha": "2.1.0",
-    "rimraf": "2.5.2",
-    "rollup": "0.29.0",
-    "rollup-plugin-node-resolve": "1.7.0",
-    "sinon": "1.12.2",
-    "vertebrate-event-emitter": "3.1.0"
+    "mocha": "3.5.3",
+    "rimraf": "2.6.2",
+    "rollup": "0.49.3",
+    "rollup-plugin-node-resolve": "3.0.0",
+    "sinon": "3.2.1",
+    "vertebrate-event-emitter": "4.0.0"
   },
   "files": [
     "build/rubidium.umd.js",
