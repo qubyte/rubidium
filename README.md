@@ -1,5 +1,7 @@
 # rubidium
 
+[![Greenkeeper badge](https://badges.greenkeeper.io/qubyte/rubidium.svg)](https://greenkeeper.io/)
+
 [![Build Status](http://img.shields.io/travis/qubyte/rubidium/master.svg)](https://travis-ci.org/qubyte/rubidium)
 [![David](https://david-dm.org/qubyte/rubidium.svg?theme=shields.io)](https://david-dm.org/qubyte/rubidium)
 
