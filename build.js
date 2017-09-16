@@ -4,35 +4,35 @@ const rollup = require('rollup');
 const nodeResolve = require('rollup-plugin-node-resolve');
 
 const plugins = [
-    nodeResolve({ jsnext: true })
+  nodeResolve({ module: true })
 ];
 
-function buildProduction() {
-    return rollup.rollup({ entry: 'lib/Rubidium.js', plugins })
-        .then(bundle => {
-            bundle.write({
-                format: 'umd',
-                moduleName: 'Rubidium',
-                dest: 'build/rubidium.umd.js'
-            });
+async function buildProduction() {
+  const bundle = await rollup.rollup({ input: 'lib/Rubidium.js', plugins });
 
-            bundle.write({
-                format: 'es6',
-                dest: 'build/rubidium.es6.js'
-            });
-        })
-        .catch(console.error); // eslint-disable-line no-console
+  await Promise.all([
+    bundle.write({
+      format: 'umd',
+      name: 'Rubidium',
+      file: 'build/rubidium.umd.js'
+    }),
+
+    bundle.write({
+      format: 'es',
+      file: 'build/rubidium.es6.js'
+    })
+  ]);
 }
 
 function buildTest() {
-    const rubidiumPromise = rollup.rollup({ entry: 'lib/Rubidium.js', plugins })
-        .then(bundle => bundle.write({ format: 'cjs', dest: 'build/rubidium.common.js' }));
+  const rubidiumPromise = rollup.rollup({ input: 'lib/Rubidium.js', plugins })
+    .then(bundle => bundle.write({ format: 'cjs', file: 'build/rubidium.common.js' }));
 
-    const uuidPromise = rollup.rollup({ entry: 'lib/uuidv4' })
-        .then(bundle => bundle.write({ format: 'cjs', dest: 'build/uuidv4.common.js' }));
+  const uuidPromise = rollup.rollup({ input: 'lib/uuidv4' })
+    .then(bundle => bundle.write({ format: 'cjs', file: 'build/uuidv4.common.js' }));
 
-    return Promise.all([rubidiumPromise, uuidPromise])
-        .catch(console.error); // eslint-disable-line no-console
+  return Promise.all([rubidiumPromise, uuidPromise])
+    .catch(console.error); // eslint-disable-line no-console
 }
 
 module.exports = process.argv.indexOf('test') === -1 ? buildProduction() : buildTest();
