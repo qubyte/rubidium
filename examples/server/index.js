@@ -14,14 +14,14 @@ const rb = new Rubidium();
 // callback in the message with the message itself as the body. Requests have
 // a custom header so that registered jobs can't create another job.
 rb.on('job', job => {
-    const options = {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'FROM-ATD-SERVER': 'true' },
-        body: JSON.stringify(job.message)
-    };
+  const options = {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'FROM-ATD-SERVER': 'true' },
+    body: JSON.stringify(job.message)
+  };
 
-    return fetch(job.message.callbackUrl, options)
-        .catch(err => console.error(err.stack || err.message));
+  return fetch(job.message.callbackUrl, options)
+    .catch(err => console.error(err.stack || err.message));
 });
 
 // Create a router for the Toisu! server.
@@ -30,36 +30,36 @@ const router = new Router();
 // This middleware will use the :timestamp parameter and the request body to
 // create a job, and then add it to the rubidium instance.
 function addJobMiddleware(req, res) {
-    const params = this.get('params');
-    const time = parseInt(params.timestamp, 10);
-    const message = this.get('body');
+  const params = this.get('params');
+  const time = parseInt(params.timestamp, 10);
+  const message = this.get('body');
 
-    // Stop callbacks registering new jobs.
-    if (req.headers['FROM-ATD-SERVER'] !== 'true') {
-        rb.add({ time, message });
-    }
+  // Stop callbacks registering new jobs.
+  if (req.headers['FROM-ATD-SERVER'] !== 'true') {
+    rb.add({ time, message });
+  }
 
-    res.statusCode = 202;
-    res.end();
+  res.statusCode = 202;
+  res.end();
 }
 
 // Use this to accept requests from itself as a test.
 function testMiddleware(req, res) {
-    const message = this.get('body');
+  const message = this.get('body');
 
-    console.log('Received callback request:', message);
+  console.log('Received callback request:', message);
 
-    res.statusCode = 204;
-    res.end();
+  res.statusCode = 204;
+  res.end();
 }
 
 // Give the router the JSON body parsing middleware and the add job middleware.
 router.route('/add/:timestamp', {
-    post: [body.json(), addJobMiddleware]
+  post: [body.json(), addJobMiddleware]
 });
 
 router.route('/test', {
-    post: [body.json(), testMiddleware]
+  post: [body.json(), testMiddleware]
 });
 
 // Create a Toisu! instance.
