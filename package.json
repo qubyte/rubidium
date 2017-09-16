@@ -7,6 +7,7 @@
   "scripts": {
     "build": "rimraf build && mkdirp build && node build.js",
     "prepublish": "npm run build",
+    "lint": "eslint .",
     "test": "npm run build -- test && mocha"
   },
   "repository": "github:qubyte/rubidium",
