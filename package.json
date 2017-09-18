@@ -19,7 +19,7 @@
     "rimraf": "2.6.2",
     "rollup": "0.50.0",
     "rollup-plugin-node-resolve": "3.0.0",
-    "sinon": "3.2.1",
+    "sinon": "3.3.0",
     "vertebrate-event-emitter": "4.0.0"
   },
   "files": [
