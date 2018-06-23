@@ -13,7 +13,7 @@
   "repository": "github:qubyte/rubidium",
   "devDependencies": {
     "eslint-config-qubyte": "~2.0.0",
-    "eslint": "~4.19.0",
+    "eslint": "~5.0.0",
     "mkdirp": "~0.5.1",
     "mocha": "~5.2.0",
     "rimraf": "~2.6.2",
