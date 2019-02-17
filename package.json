@@ -17,7 +17,7 @@
     "mkdirp": "~0.5.1",
     "mocha": "~5.2.0",
     "rimraf": "~2.6.2",
-    "rollup": "~1.1.0",
+    "rollup": "~1.2.0",
     "rollup-plugin-node-resolve": "~4.0.0",
     "sinon": "~6.0.0",
     "vertebrate-event-emitter": "~4.0.0"
