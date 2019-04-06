@@ -18,7 +18,7 @@
     "mocha": "~6.0.0",
     "rimraf": "~2.6.2",
     "rollup": "^1.9.0",
-    "rollup-plugin-node-resolve": "~4.1.0",
+    "rollup-plugin-node-resolve": "~4.2.1",
     "sinon": "^7.3.1",
     "vertebrate-event-emitter": "~4.0.0"
   },
