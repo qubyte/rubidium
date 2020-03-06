@@ -9,6 +9,6 @@
   "author": "Mark Stanley Everitt",
   "license": "MIT",
   "dependencies": {
-    "ioredis": "2.0.0"
+    "ioredis": "2.5.0"
   }
 }
