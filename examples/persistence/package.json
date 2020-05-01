@@ -4,11 +4,15 @@
   "description": "An example which persists the job queue to redis.",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node ."
+    "start": "node .",
+    "snyk-protect": "snyk protect",
+    "prepublish": "npm run snyk-protect"
   },
   "author": "Mark Stanley Everitt",
   "license": "MIT",
   "dependencies": {
-    "ioredis": "2.5.0"
-  }
+    "ioredis": "2.5.0",
+    "snyk": "^1.316.1"
+  },
+  "snyk": true
 }
