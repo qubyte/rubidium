@@ -1,13 +1,5 @@
 # rubidium
 
-[![Greenkeeper badge](https://badges.greenkeeper.io/qubyte/rubidium.svg)](https://greenkeeper.io/)
-
-[![Build Status](http://img.shields.io/travis/qubyte/rubidium/master.svg)](https://travis-ci.org/qubyte/rubidium)
-[![David](https://david-dm.org/qubyte/rubidium.svg?theme=shields.io)](https://david-dm.org/qubyte/rubidium)
-
-[![npm](http://img.shields.io/npm/v/rubidium.svg)](https://npmjs.org/rubidium)
-[![npm](http://img.shields.io/github/release/qubyte/rubidium.svg)](https://github.com/qubyte/rubidium/releases)
-
 Rubidium is a one-time task emitter, inspired by the unix `at` utility. This
 module is a minimal implementation. It exports a constructor. Instances of the
 constructor are event emitters, with methods to add and remove job
