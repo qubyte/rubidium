@@ -1,6 +1,6 @@
 {
   "name": "rubidium",
-  "version": "2.0.3",
+  "version": "3.0.0",
   "description": "A small unique job scheduler.",
   "main": "build/rubidium.umd.js",
   "module": "build/rubidium.es6.js",
