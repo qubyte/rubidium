@@ -1,3 +1,7 @@
+# 3.0.0
+
+- The minimum officially supported version of Node.js is now 10.
+
 # 2.0.2
 
 Private API refactor with a net reduction in code.
