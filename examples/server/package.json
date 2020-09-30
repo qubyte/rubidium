@@ -9,9 +9,9 @@
   "author": "Mark Stanley Everitt",
   "license": "MIT",
   "dependencies": {
-    "node-fetch": "1.7.3",
-    "toisu": "3.0.6",
-    "toisu-body": "1.0.5",
-    "toisu-router": "3.1.2"
+    "node-fetch": "^2.6.1",
+    "toisu": "^3.0.6",
+    "toisu-body": "^2.0.3",
+    "toisu-router": "^4.1.0"
   }
 }

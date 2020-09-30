@@ -3,7 +3,7 @@
 const fetch = require('node-fetch');
 const Rubidium = require('../../build/rubidium.umd');
 const http = require('http');
-const Toisu = require('Toisu');
+const Toisu = require('toisu');
 const Router = require('toisu-router');
 const body = require('toisu-body');
 
