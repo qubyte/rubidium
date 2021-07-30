@@ -1,3 +1,8 @@
+# 4.0.0
+
+- This module is now packaged only as an ES module.
+- The minimum supported version of node is now 12.22.0.
+
 # 3.0.0
 
 - The minimum officially supported version of Node.js is now 10.
