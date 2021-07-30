@@ -1,5 +1,5 @@
 import EventEmitter from 'vertebrate-event-emitter';
-import Job from './Job';
+import Job from './job.js';
 
 const jobs = new WeakMap();
 const timeouts = new WeakMap();

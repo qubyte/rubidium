@@ -2,6 +2,7 @@
   "name": "persist-to-redis",
   "version": "1.0.0",
   "description": "An example which persists the job queue to redis.",
+  "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node ."
@@ -9,6 +10,7 @@
   "author": "Mark Stanley Everitt",
   "license": "MIT",
   "dependencies": {
-    "ioredis": "2.5.0"
+    "ioredis": "4.27.6",
+    "rubidium": "*"
   }
 }

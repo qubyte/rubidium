@@ -1,9 +1,6 @@
-'use strict';
-
-const Rubidium = require('../build/rubidium.common.js');
-
-const sinon = require('sinon');
-const assert = require('assert');
+import Rubidium from 'rubidium';
+import sinon from 'sinon';
+import { strict as assert } from 'assert';
 
 describe('Rubidium', () => {
   let callback;

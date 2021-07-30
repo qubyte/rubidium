@@ -1,11 +1,9 @@
-'use strict';
-
-const fetch = require('node-fetch');
-const Rubidium = require('../../build/rubidium.umd');
-const http = require('http');
-const Toisu = require('toisu');
-const Router = require('toisu-router');
-const body = require('toisu-body');
+import fetch from 'node-fetch';
+import Rubidium from 'rubidium';
+import http from 'http';
+import Toisu from 'toisu';
+import Router from 'toisu-router';
+import body from 'toisu-body';
 
 // Set up a rubidium instance.
 const rb = new Rubidium();
