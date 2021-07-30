@@ -1,4 +1,4 @@
-import uuid from './uuidv4.js';
+import { v4 as uuid } from 'uuid';
 
 export default class Job {
   constructor(spec) {

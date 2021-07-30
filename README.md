@@ -14,10 +14,6 @@ Rubidium is built on
 which makes it robust against memory leaks. It has been bundled for you with
 its dependencies, so Rubidium has no dependencies in production.
 
-Both UMD (for your CommonJS, AMD, and browser global needs) and ES2015 flavour
-modules have been provided, so you can use this module easily with all major
-module systems.
-
 ## Usage
 
 A brief example is given below. See the examples directory for some more
