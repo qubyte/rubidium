@@ -1,6 +1,6 @@
 {
+  "extends": "qubyte/ES2018-module",
   "env": {
     "node": true
-  },
-  "extends": "qubyte/ES2018"
+  }
 }

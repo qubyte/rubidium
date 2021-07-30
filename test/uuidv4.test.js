@@ -1,8 +1,6 @@
-'use strict';
-
-const sinon = require('sinon');
-const assert = require('assert');
-const uuidv4 = require('../build/uuidv4.common.js');
+import sinon from 'sinon';
+import assert from 'assert';
+import uuidv4 from '../src/uuidv4.js';
 
 describe('uuidv4', () => {
   it('is a function', () => {

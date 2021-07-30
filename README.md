@@ -25,7 +25,7 @@ interesting examples, including wrapping a rubidium instance in an HTTP server,
 and persisting a rubidium instance over app restarts.
 
 ```javascript
-var Rubidium = require('rubidium');
+import Rubidium from 'rubidium';
 
 var rb = new Rubidium();
 

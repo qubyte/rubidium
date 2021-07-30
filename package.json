@@ -2,29 +2,25 @@
   "name": "rubidium",
   "version": "3.0.1",
   "description": "A small unique job scheduler.",
-  "main": "build/rubidium.umd.js",
-  "module": "build/rubidium.es6.js",
+  "type": "module",
+  "main": "src/rubidium.js",
+  "module": "src/rubidium.js",
+  "exports": {
+    ".": "./src/rubidium.js"
+  },
   "scripts": {
-    "build": "rimraf build && mkdirp build && node build.js",
-    "prepublish": "npm run build",
     "lint": "eslint .",
-    "test": "npm run build -- test && mocha"
+    "test": "mocha"
   },
   "repository": "github:qubyte/rubidium",
   "devDependencies": {
-    "eslint": "^7.10.0",
-    "eslint-config-qubyte": "~3.0.0",
-    "mkdirp": "^1.0.4",
-    "mocha": "^8.1.3",
-    "rimraf": "^3.0.2",
-    "rollup": "^2.3.3",
-    "rollup-plugin-node-resolve": "~5.2.0",
-    "sinon": "^9.0.1",
-    "vertebrate-event-emitter": "~4.0.0"
+    "eslint": "^7.31.0",
+    "eslint-config-qubyte": "^4.1.0",
+    "mocha": "^9.0.3",
+    "sinon": "^11.1.2"
   },
   "files": [
-    "build/rubidium.umd.js",
-    "build/rubidium.es6.js"
+    "src"
   ],
   "keywords": [
     "cron",
@@ -33,5 +29,8 @@
     "atd"
   ],
   "author": "Mark Stanley Everitt",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "vertebrate-event-emitter": "^5.0.0"
+  }
 }

@@ -1,11 +1,9 @@
-'use strict';
-
 // Start, then quit, then start this app again. The console logs will show that
 // the job registered the first time the app ran will be emitted after 10
 // seconds, even though the app was restarted.
 
-const Redis = require('ioredis');
-const Rubidium = require('../../build/rubidium.umd.js');
+import Redis from 'ioredis';
+import Rubidium from 'rubidium';
 
 const redis = new Redis();
 const rb = new Rubidium();
